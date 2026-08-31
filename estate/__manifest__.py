@@ -6,16 +6,11 @@
         'mail',
         'hr_holidays',
     ],
-    'version': '16.0.1.0.0',
+    'version': '19.0.1.0.0',
     'author': "Odoo S.A.",
     'license': "LGPL-3",
     'installable': True,
     'application': True,
-    'assets': {
-        'web.assets_backend': [
-            'estate/static/src/js/legacy_property_widget.js',
-        ],
-    },
     'data': [
         'views/res_users_views.xml',
         'views/estate_property_offer_views.xml',

@@ -5,7 +5,7 @@ from odoo.http import request
 class EstateController(http.Controller):
     @http.route(
         '/estate/properties',
-        type='json',
+        type='jsonrpc',
         auth='user',
         methods=['POST'],
         csrf=False,
@@ -23,7 +23,7 @@ class EstateController(http.Controller):
 
     @http.route(
         '/estate/offers/create',
-        type='json',
+        type='jsonrpc',
         auth='user',
         methods=['POST'],
         csrf=False,

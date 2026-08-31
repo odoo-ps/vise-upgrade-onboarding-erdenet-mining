@@ -1,5 +1,7 @@
-from odoo import api, fields, models
 from odoo.exceptions import UserError
+
+from odoo import fields, models
+
 
 class ResUsers(models.Model):
     _inherit = 'res.users'

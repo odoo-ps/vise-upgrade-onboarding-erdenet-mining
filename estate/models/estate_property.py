@@ -6,31 +6,28 @@ from odoo.exceptions import UserError
 
 class Property(models.Model):
     _name = 'estate.property'
-    _description = "Test description for estate.property model"
+    _description = "Estate Property"
     _order = 'id DESC'
 
     name = fields.Char(required=True)
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id.id)
-    expected_price = fields.Monetary(required=True, currency_field='currency_id')
+    expected_price = fields.Monetary(required=True)
     commission_rate = fields.Float(
         string="Commission Rate (%)",
         default=6.0,
-        states={'sold': [('readonly', True)], 'cancelled': [('readonly', True)]},
     )
     commission_amount = fields.Monetary(
         compute='_compute_commission_amount',
-        currency_field='currency_id',
     )
     property_type_id = fields.Many2one('estate.property.type', string="Property Type")
-    channel_id = fields.Many2one('mail.channel', string="Discussion Channel")
+    channel_id = fields.Many2one('discuss.channel', string="Discussion Channel")
     state = fields.Selection(
         selection=[('new', "New"), ('offer_received', "Offer Received"), ('offer_accepted', "Offer accepted"), ('sold', "Sold"), ('cancelled', "Cancelled")],
         default='new',
     )
     description = fields.Html()
     postcode = fields.Char()
-    currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id.id)
-    selling_price = fields.Monetary(copy=False, readonly=True, currency_field='currency_id')
+    selling_price = fields.Monetary(copy=False, readonly=True)
     date_availability = fields.Date(copy=False, default=lambda self: date.today() + timedelta(days=90))
     bedrooms = fields.Integer(default=2)
     living_area = fields.Integer()
@@ -47,12 +44,10 @@ class Property(models.Model):
     tag_ids = fields.Many2many('estate.property.tag')
     offer_ids = fields.One2many('estate.property.offer', 'property_id')
     total_area = fields.Float(compute='_compute_total_area')
-    best_price = fields.Monetary(compute='_compute_best_price', currency_field='currency_id')
+    best_price = fields.Monetary(compute='_compute_best_price')
 
-    _sql_constraints = [
-        ('_check_expected_price', 'CHECK(expected_price > 0)', "The expected price must be strictly positive"),
-        ('_check_selling_price', 'CHECK(selling_price >= 0)', "The selling price must be positive"),
-    ]
+    _check_expected_price = models.Constraint("CHECK(expected_price > 0)", "The expected price must be strictly positive")
+    _check_selling_price = models.Constraint('CHECK(selling_price >= 0)', "The selling price must be positive")
 
     @api.depends('garden_area', 'living_area')
     def _compute_total_area(self):
@@ -69,38 +64,9 @@ class Property(models.Model):
         for record in self:
             record.commission_amount = record.selling_price * record.commission_rate / 100
 
-    def name_get(self):
-        return [
-            (record.id, f"{record.name} ({record.postcode or 'no postcode'})")
-            for record in self
-        ]
-
-    def get_legacy_company_commission(self):
-        field = self.env['ir.model.fields'].search([
-            ('model', '=', self._name),
-            ('name', '=', 'commission_rate'),
-        ], limit=1)
-        self.env.cr.execute(
-            """
-                SELECT value_float
-                  FROM ir_property
-                 WHERE fields_id = %s
-                   AND res_id = %s
-            """,
-            (field.id, f"{self._name},{self.id}"),
-        )
-        result = self.env.cr.fetchone()
-        return result[0] if result else self.commission_rate
-
-    @api.model
-    def fields_view_get(self, view_id=None, view_type='form', toolbar=False, submenu=False):
-        result = super().fields_view_get(
-            view_id=view_id,
-            view_type=view_type,
-            toolbar=toolbar,
-            submenu=submenu,
-        )
-        return result
+    def _compute_display_name(self):
+        for record in self:
+            record.display_name = f"{record.name} ({record.postcode or 'no postcode'})"
 
     @api.onchange('garden')
     def _onchange_garden(self):

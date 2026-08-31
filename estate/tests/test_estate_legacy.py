@@ -1,9 +1,9 @@
 from datetime import date, timedelta
 
-from odoo.tests.common import SavepointCase
+from odoo.tests.common import TransactionCase
 
 
-class TestEstateLegacyApi(SavepointCase):
+class TestEstateLegacyApi(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
