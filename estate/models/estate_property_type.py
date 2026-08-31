@@ -12,9 +12,7 @@ class PropertyType(models.Model):
     offer_ids = fields.One2many('estate.property.offer', 'property_type_id')
     offer_count = fields.Integer(compute='_compute_offer_count', default=0)
 
-    _sql_constraints = [
-        ('_check_name', 'UNIQUE (name)', "Property type name must be unique)"),
-    ]
+    _check_name = models.Constraint('UNIQUE (name)', "Property type name must be unique)")
 
 
     @api.depends('offer_ids')

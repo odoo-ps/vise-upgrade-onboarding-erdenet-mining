@@ -27,7 +27,7 @@ class TestEstatePropertyOffer(TestEstateCommon):
 
     def test_expired(self):
         offer = self.env['estate.property.offer'].create({
-            'price': 230000,
+            'price': 675000,
             'partner_id': self.partner.id,
             'property_id': self.beachfront_villa.id,
             'validity': -1,

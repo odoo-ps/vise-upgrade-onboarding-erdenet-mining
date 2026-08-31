@@ -13,6 +13,4 @@ class PropertyTag(models.Model):
     name = fields.Char(required=True)
     color = fields.Integer(default=_get_default_color)
 
-    _sql_constraints = [
-        ('_check_name', 'UNIQUE (name)', "Property tag name must be unique)"),
-    ]
+    _check_name = models.Constraint('UNIQUE (name)', "Property tag name must be unique)")

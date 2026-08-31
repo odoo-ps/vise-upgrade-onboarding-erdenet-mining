@@ -1,6 +1,5 @@
-from odoo.osv import expression
 from odoo.tools import float_compare
-
+from odoo.fields import Domain
 from odoo.addons.estate.tests.test_estate_property import TestEstateProperty
 
 
@@ -10,8 +9,8 @@ class TestEstateAccountProperty(TestEstateProperty):
 
         self._sell_cozy_cottage()
 
-        self.invoice = self.env['account.move'].search(expression.AND([
-            [['partner_id', '=', self.cozy_cottage.buyer_id.id]], 
+        self.invoice = self.env['account.move'].search(Domain.AND([
+            [('partner_id', '=', self.cozy_cottage.buyer_id.id)],
             [('move_type', '=', 'out_invoice')]
             ]))
         self.assertTrue(self.invoice)
