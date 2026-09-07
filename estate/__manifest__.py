@@ -6,7 +6,7 @@
         'mail',
         'hr_holidays',
     ],
-    'version': '19.0.1.0.0',
+    'version': '19.5.1.0.0',
     'author': "Odoo S.A.",
     'license': "LGPL-3",
     'installable': True,
@@ -18,6 +18,6 @@
         'views/estate_property_type_views.xml',
         'views/estate_property_views.xml',
         'views/estate_menus.xml',
-        'security/ir.model.access.csv',
+        'security/ir.access.csv',
     ],
 }

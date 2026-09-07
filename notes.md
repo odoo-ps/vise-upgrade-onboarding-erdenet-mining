@@ -213,3 +213,59 @@ Techniques:
 - Step through logic using a debugger
 - Read through the server logs, both during module installation/upgrade and test results
 - Search through official documentations / online forums
+
+## Part 2 - 19.0 to 20.0
+
+Since the code was already brought up to modern conventions during the 16.0 -> 19.0 pass (Constraint objects,
+`@api.ondelete`, `invisible=`/no more `attrs`, `list` views, `jsonrpc` routes, etc.), the 19.0 -> 20.0 jump is a
+much smaller delta. Repeat the same install/inspect/fix/test loop as Part 1, just with a shorter list of findings.
+
+1. Set up a venv for 20.0 (none existed yet under `~/odev/virtualenvs/`):
+`python3 -m venv ~/odev/virtualenvs/20.0`
+`~/odev/virtualenvs/20.0/bin/pip install -r ~/odev/worktrees/20.0/odoo/requirements.txt`
+(the 20.0 checkout's `odoo/release.py` still reports `version_info = (19, 5, 0, ALPHA, 1, '')` at the time of
+this migration - i.e. it's pre-release/master, not yet stamped "20.0" - so `release.major_version` is `'19.5'`,
+not `'20.0'`.)
+
+2. Create an empty database on the new version and try to install:
+`
+--addons-path="addons/,../enterprise,../vise-upgrade-onboarding-erdenet-mining,../design-themes"
+--upgrade-path="/home/odoo/odev/worktrees/upgrade-util/src, /home/odoo/odev/worktrees/upgrade/migrations"
+--stop-after-init
+-i estate,estate_account
+-d erdenet_20_clean
+--db_port 5433
+--log-handler :INFO
+`
+
+### Bug list
+- Both modules load with `The module estate has an incompatible version, setting installable=False`:
+-> `check_version()` (`odoo/modules/module.py`) requires the manifest `version` to start with `release.major_version`
+-> Since this checkout's `release.major_version` is `'19.5'` (see above), bump `'version': '19.0.1.0.0'` to `'19.5.1.0.0'` in both manifests (not `'20.0...'`, that would fail the same check)
+
+- `estate/security/ir.model.access.csv` load fails with `KeyError: 'ir.model.access'`:
+-> The `ir.model.access` model (4 boolean `perm_*` columns) has been removed and replaced by a unified `ir.access`
+model (single `operation` selection field, one of `crud`/`cru`/`cr`/.../`c`/`r`/`u`/`d`, plus an optional `domain`)
+-> Confirmed by grepping standard modules: no more `*/security/ir.model.access.csv` files anywhere, all replaced
+by `*/security/ir.access.csv`
+-> Rename the file to `ir.access.csv` (and update the manifest's `data` list accordingly), convert the columns:
+`id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink` becomes
+`id,name,model_id,group_id/id,operation,domain`
+-> Note `model_id` is no longer an xmlid reference (`model_estate_property`), it takes the model's technical name
+directly (`estate.property`) - `ir.model`'s `_rec_names_search = ('name', 'model')` is what lets the CSV loader's
+implicit name_search on the Many2one resolve a plain technical name
+-> All our rows were `1,1,1,1` (full CRUD), so they all become `operation=crud`, `domain` left empty
+
+5. Install the module on the upgraded/target database, make sure it still works:
+- Fresh install of `estate,estate_account` (`-i`) on an empty 20.0 database: clean, no warnings.
+- Full test suite (`--test-tags estate,estate_account`): 17 tests, 0 failed, 0 errors.
+- Tried `-u all` against a copy of the `erdenet_19_clean` database to simulate an in-place upgrade end-to-end:
+this pulls in the *entire* product's core upgrade (every previously-installed standard module), which hit
+unrelated pre-existing core upgrade-script gaps (e.g. a `product.product` field removal missing its
+`util.remove_field` call). That is the Upgrade platform/service's job, not something to fix here as part of a
+single custom module's version bump - out of scope for this exercise, same as it was out of scope in Part 1.
+Sticking to the documented pattern (fresh empty db + `-i`) is what actually validates the custom code.
+
+### Summary
+Only 3 lines actually needed to change for this leg: the two manifest `version` bumps, and the ACL file
+rename + reformat. Everything else (models, views, controllers, tests) was already compatible.

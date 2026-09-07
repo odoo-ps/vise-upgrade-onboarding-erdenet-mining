@@ -7,7 +7,7 @@
         'estate',
         'account',
     ],
-    'version': '19.0.1.0.0',
+    'version': '19.5.1.0.0',
     'installable': True,
     'application': True,
     'author': "Odoo S.A.",
