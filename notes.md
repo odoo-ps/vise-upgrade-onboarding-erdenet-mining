@@ -206,6 +206,9 @@ Unlike the section 2 bugs (found while still exploring the 16.0 database), these
 -> Discover that the triggers 'on_create', 'on_write' have been deprecated throughout versions -> Also discover that the trigger_field_ids have been unset
 -> Fix: `SQL queries` for reactivating records and updating `trigger_field_ids`
 
+- Discuss App -> Migration report -> Section "Disabled Views" -> Some views have been deactivated.
+-> Discover that those are studio views -> Check documentation on upgrade-util - edit_view -> Write migration scripts
+
 ### Honorable mentions on tools that greatly helped upgrades
 - A good plugin for IDE support on Odoo development, enable code completion, syntax highlighting, and catch easily detectable odoo-specific errors, etc.
 https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo

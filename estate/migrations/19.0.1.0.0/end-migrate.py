@@ -26,3 +26,7 @@ def migrate(cr, version):
             WHERE id = 2
         """
     )
+
+    with util.edit_view(cr, "studio_customization.odoo_studio_stock_pi_e4864fcf-c848-4684-9cc6-45243d3b3d7a") as arch:
+        node = arch.xpath(".//xpath[@expr=\"//form[1]/sheet[1]/notebook[1]/page[@name='operations']/field[@name='move_ids_without_package']/list[1]/field[@name='quantity_done']\"]")[0]
+        node.attrib['expr'] = "//form[1]/sheet[1]/notebook[1]/page[@name='operations']/field[@name='move_ids']/list[1]/field[@name='quantity']"
